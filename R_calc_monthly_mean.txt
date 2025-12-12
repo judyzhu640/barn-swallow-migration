@@ -1,0 +1,50 @@
+
+R version 4.5.2 (2025-10-31) -- "[Not] Part in a Rumble"
+Copyright (C) 2025 The R Foundation for Statistical Computing
+Platform: aarch64-apple-darwin20
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[R.app GUI 1.82 (8556) aarch64-apple-darwin20]
+
+[History restored from /Users/zhuziyue/.Rapp.history]
+
+> library(terra)
+terra 1.8.86
+> 
+> input_dir  <- "metadata_2023"
+> output_dir <- "monthly_mean"
+> if (!dir.exists(output_dir)) dir.create(output_dir)
+> 
+> tif_files <- list.files(input_dir, pattern = "\\.tif$", full.names = TRUE)
+> 
+> get_month <- function(path) {
++   fname <- basename(path)
++   date_str <- sub(".*(2023-\\d{2}-\\d{2}).*", "\\1", fname)
++   format(as.Date(date_str), "%m")
++ }
+> 
+> months <- vapply(tif_files, get_month, character(1))
+> month_groups <- split(tif_files, months)
+> 
+> for (m in names(month_groups)) {
++   ras_list <- lapply(month_groups[[m]], rast)
++   r_stack  <- rast(ras_list)
++   r_mean   <- app(r_stack, fun = mean, na.rm = TRUE)
++   out_path <- file.path(output_dir, paste0("barswa_month_mean_2023-", m, ".tif"))
++   writeRaster(r_mean, out_path, overwrite = TRUE)
++ }
+> 
+> 
